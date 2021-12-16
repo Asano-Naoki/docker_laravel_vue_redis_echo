@@ -7,7 +7,7 @@ docker-compose for Laravel with vue.js, redis, and echo-server
 You can create minimum Laravel(LEMP) environment for broadcasting with vue.js, redis, laravel-echo-server using docker-compose.
 
 ## Demo
-(insert a video later)
+https://user-images.githubusercontent.com/63027441/146301131-a3d0d38a-9465-4105-a113-0ea6152d8c39.mp4
 
 ## Prerequisites
 (I recommend you try https://github.com/Asano-Naoki/docker_laravel_minimum first.)
