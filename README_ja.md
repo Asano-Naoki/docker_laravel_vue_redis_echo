@@ -316,7 +316,8 @@ docker run --rm  -v $PWD:/usr/src/app -w /usr/src/app node npm run dev
 
 10. ブラウザを２つ起動し、それらの間でチャットをします。
 
-welcome page(http://localhost)に行くと[デモ](#デモ)のようにチャットできます。
+welcome page(http://localhost)に行くと、
+[デモ](#デモ)のようにチャットできます。
 
 
 ## 使い方
