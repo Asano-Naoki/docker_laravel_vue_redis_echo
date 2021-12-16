@@ -104,7 +104,7 @@ docker run --rm  -v $PWD:/usr/src/app -w /usr/src/app node npm install && npm ru
 注:
 "npm ERR! code ELIFECYCLE"が発生したら、もう一度同じコマンドを実行してください。
 
-5. welcome page（http://localhost）に行きます。
+5. welcome page（http://localhost） に行きます。
 
 "Example Component  
 I'm an example component."  
@@ -316,7 +316,7 @@ docker run --rm  -v $PWD:/usr/src/app -w /usr/src/app node npm run dev
 
 10. ブラウザを２つ起動し、それらの間でチャットをします。
 
-welcome page（http://localhost）に行くと、
+welcome page（http://localhost） に行くと、
 [デモ](#デモ)のようにチャットできます。
 
 
