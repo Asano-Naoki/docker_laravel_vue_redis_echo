@@ -107,7 +107,7 @@ NOTE:
 If "npm ERR! code ELIFECYCLE" occurs, simply execute the same command again.
 
 
-5. Visit welcome page(http://localhost)
+5. Visit welcome page(http://localhost).
 
 The string  
 
@@ -196,8 +196,10 @@ echo-server_1  |
 
 2. Install laravel-echo and socket.io-client.
 ```
-docker run --rm  -v $PWD:/usr/src/app -w /usr/src/app node npm install laravel-echo socket.io-client
+docker run --rm  -v $PWD:/usr/src/app -w /usr/src/app node npm install laravel-echo socket.io-client@2.4.0
 ```
+NOTE:
+Latest socke.io-client fails to establish websocket connection. Version 2.4.0 is fine.
 
 3. Add Echo setting to resources/js/bootstrap.js.
 ```
@@ -206,7 +208,6 @@ docker run --rm  -v $PWD:/usr/src/app -w /usr/src/app node npm install laravel-e
 +window.Echo = new Echo({
 +    broadcaster: 'socket.io',
 +    host: window.location.hostname + ':6001'
-+    transports: ['websocket']
 +});
 ```
 NOTE:
@@ -255,10 +256,10 @@ php artisan make:event MessageCreated
 -    {
 -        //
 -    }
- +   public function __construct($message)
- +   {
- +       $this->message = $message;
- +   }
++    public function __construct($message)
++    {
++        $this->message = $message;
++    }
 -     public function broadcastOn()
 -    {
 -        return new PrivateChannel('channel-name');
@@ -301,7 +302,7 @@ php artisan make:event MessageCreated
 +    },
 +    mounted() {
 +        Echo.channel('chat')
-+            .listen('.MessageCreated', (e) => {
++            .listen('MessageCreated', (e) => {
 +                this.messages.push(e.message);
 +            });
 +    },
@@ -321,12 +322,13 @@ php artisan make:event MessageCreated
 docker run --rm  -v $PWD:/usr/src/app -w /usr/src/app node npm run dev
 ```
 
+10. Run two browsers and chat with each other.
+
+Visit welcome page(http://localhost) and you can chat with each other as shown in the [Demo](#demo)
+
 
 ## Usage
-Send an email on you Laravel application and the email is trapped automatically in mailhog. You can check the emails at http://localhost:8025/
-
-NOTE:
-You must set MAIL_FROM_ADDRESS a string which represents an email address(e.g. test@test) in your .env file to prevent the "Cannot send message without a sender address" error.
+This repository is an infraastructure for real-time interactions. There is no special usage. Just use laravel broadcasting.
 
 
 ## Author
