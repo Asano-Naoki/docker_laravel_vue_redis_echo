@@ -41,6 +41,9 @@ docker run --rm -v $PWD:/app composer create-project laravel/laravel example-bro
 +REDIS_HOST=redis
 +REDIS_PREFIX=
 ```
+NOTE:
+Adding "REDIS_PREFIX=" is important. Laravel automatically sets redis prefix and it is confusing, so I set REDIS_PREFIX blank. You can achieve this by editing config/database.php, too.
+
 3. Copy all the files and directory in this repository to the Laravel project directory with git command(fetch and merge) or manually.
 ```
 git init
@@ -74,13 +77,13 @@ docker run --rm -v $PWD:/app composer require laravel/ui
 NOTE:
 It is not necessary to install laravel/ui, however, it is the easiest way to use vue.js.
 
-2. Publish the vue.js and auth related files.
+2. Publish the vue.js related files.
 ```
 docker-compose exec php sh
 ...
 (after entering sh of php)
 ...
-php artisan ui vue --auth
+php artisan ui vue
 ```
 
 3. Edit resources/views/welcome.blade.php file.
@@ -93,6 +96,8 @@ php artisan ui vue --auth
 +<div id="app" class="mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg">
 +<example-component></example-component>
 ```
+NOTE:
+Withouse "defer", "Cannot find element: #app" occurs.
 
 4. Compile the assets.
 ```
@@ -128,7 +133,7 @@ redis-cli
 Session information like "laravel_database_laravel_cache:xxxxxxxxxxxxxxxxxxxx" should be displayed. This means you connect laravel to redis and session information is stored there.
 
 NOTE:
-To store session information in redis, SESSION_DRIVER is need to be set redis instead of file. See Base set up section above.
+To store session information in redis, SESSION_DRIVER is need to be set "redis" instead of "file". [See Base](#base-set-up) set up section above.
 
 ### laravel-echo-server
 
@@ -183,30 +188,135 @@ echo-server_1  |
 
 ### Laravel app
 
-1. Uncomment Broadcast Service Provider in config/app.php
+1. Uncomment Broadcast Service Provider in config/app.php.
 ```
 -// App\Providers\BroadcastServiceProvider::class,
 +App\Providers\BroadcastServiceProvider::class,
 ```
 
-2. Install laravel-echo and socket.io-client
+2. Install laravel-echo and socket.io-client.
 ```
 docker run --rm  -v $PWD:/usr/src/app -w /usr/src/app node npm install laravel-echo socket.io-client
 ```
 
-3. Add Echo setting to resources/js/bootstrap.js
+3. Add Echo setting to resources/js/bootstrap.js.
 ```
 +import Echo from 'laravel-echo';
 +window.io = require('socket.io-client');
 +window.Echo = new Echo({
 +    broadcaster: 'socket.io',
 +    host: window.location.hostname + ':6001'
++    transports: ['websocket']
 +});
 ```
 NOTE:
 Echo setting for pusher is prepared in the state of comment out, but there are some differences between them(for pusher and for redis).
 
-4. Compile the assets.
+NOTE:
+Without "transports: ['websocket']", long polling sometimes continues endlessly and cannot upgrade to websocket connection.
+
+4. Add route for message data post to routes/web.php.
+```
++ Route::post('/chat', [App\Http\Controllers\ChatController::class, 'index']);
+```
+
+5. Make the controller and event.
+```
+docker-compose exec php sh
+...
+(after entering sh of php)
+...
+php artisan make:controller ChatController
+php artisan make:event MessageCreated
+```
+
+6. Edit app/Http/Controllers/ChatController.php.
+```
+(at the top level)
++ use App\Events\MessageCreated;
+
+(in the class ChatController)
++    public function index(Request $request) {
++        $message = $request->input('message');
++        MessageCreated::dispatch($message);
++        return $message;
++    }
+```
+
+7. Edit app/Events/MessageCreated.php.
+```
+(at the top level)
+- class MessageCreated
++ class MessageCreated implements ShouldBroadcast
+
+(in the class MessageCreated)
++ public $message;
+-    public function __construct()
+-    {
+-        //
+-    }
+ +   public function __construct($message)
+ +   {
+ +       $this->message = $message;
+ +   }
+-     public function broadcastOn()
+-    {
+-        return new PrivateChannel('channel-name');
+-    }
++    public function broadcastOn()
++    {
++        return new Channel('chat');
++    }
+```
+
+8. Edit resources/js/components/ExampleComponent.vue
+```
+-<div class="card-body">
+-    I'm an example component.
+-</div>
++<div class="card-body">
++    I'm an example component.
++    <form>
++        <input type="text" v-model="message" style="border:solid">
++        <button v-on:click.prevent="submit">submit</button>
++    </form>
++    <ul>
++        <li v-for="message in messages">
++            {{ message }}
++        </li>
++    </ul>
++</div>
+
+-export default {
+-    mounted() {
+-        console.log('Component mounted.')
+-    }
+-}
++export default {
++    data() {
++        return {
++            message: '',
++            messages: [],
++        }
++    },
++    mounted() {
++        Echo.channel('chat')
++            .listen('.MessageCreated', (e) => {
++                this.messages.push(e.message);
++            });
++    },
++    methods: {
++        submit() {
++            axios
++                .post('/chat', {'message' : this.message})
++                .then(response => {})
++                .catch(error => {});
++        },
++    },
++}
+```
+
+9. Compile the assets.
 ```
 docker run --rm  -v $PWD:/usr/src/app -w /usr/src/app node npm run dev
 ```
