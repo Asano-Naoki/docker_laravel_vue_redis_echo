@@ -213,9 +213,6 @@ Latest socke.io-client fails to establish websocket connection. Version 2.4.0 is
 NOTE:
 Echo setting for pusher is prepared in the state of comment out, but there are some differences between them(for pusher and for redis).
 
-NOTE:
-Without "transports: ['websocket']", long polling sometimes continues endlessly and cannot upgrade to websocket connection.
-
 4. Add route for message data post to routes/web.php.
 ```
 + Route::post('/chat', [App\Http\Controllers\ChatController::class, 'index']);
