@@ -1,28 +1,26 @@
-[日本語版 README はこちら](/README_ja.md)
-
 # docker_laravel_vue_redis_echo
-docker-compose for Laravel with vue.js, redis, and echo-server
+vue.js、redis、echo-serverを使えるLaravel環境を作るためのdocker-compose
 
-## Summary
-You can create minimum Laravel(LEMP) environment for broadcasting with vue.js, redis, laravel-echo-server using docker-compose.
+## 概要
+docker-composeを使って最小限のvue.js、redis、echo-server付きのLaravel(LEMP)環境を構築することができます。
 
-## Demo
+## デモ
 https://user-images.githubusercontent.com/63027441/146301131-a3d0d38a-9465-4105-a113-0ea6152d8c39.mp4
 
-## Prerequisites
-(I recommend you try https://github.com/Asano-Naoki/docker_laravel_minimum first.)
+## 前提条件
+(まず https://github.com/Asano-Naoki/docker_laravel_minimum を試すことをおすすめします。)
 
-Before using this repository, prepare your Laravel project directory having broadcasting function.
+このリポジトリを使う前に、ブロードキャスト機能のあるLaravelプロジェクトディレクトリを用意してください。
 
-If you'd like to create a new one, follow the directions below:
+新しいLaravelプロジェクトディレクトリを作る場合は、以下の手順に従ってください。
 
-### Base set up
+### 基本設定
 
-1. Create a brand new Laravel project directory.
+1. まっさらなLaravelプロジェクトディレクトリを作ります。
 ```
 docker run --rm -v $PWD:/app composer create-project laravel/laravel example-broadcast-app
 ```
-2. Edit .env file.
+2. .envファイルを編集します。
 ```
 -DB_HOST=127.0.0.1
 +DB_HOST=mysql
@@ -41,10 +39,10 @@ docker run --rm -v $PWD:/app composer create-project laravel/laravel example-bro
 +REDIS_HOST=redis
 +REDIS_PREFIX=
 ```
-NOTE:
-Adding "REDIS_PREFIX=" is important. Laravel automatically sets redis prefix and it is confusing, so I set REDIS_PREFIX blank. You can achieve this by editing config/database.php, too.
+注:
+"REDIS_PREFIX="を付け加えることが重要です。Laravelは自動的にredisのプレフィックスを設定します。それがややこしいので、REDIS_PREFIXを空白にします。config/database.phpを編集することも可能です。
 
-3. Copy all the files and directory in this repository to the Laravel project directory with git command(fetch and merge) or manually.
+3. このリポジトリ内のファイルとディレクトリをすべて、gitコマンド（fetchとmerge）か手動で、Laravelプロジェクトディレクトリにコピーします。
 ```
 git init
 git add .
@@ -53,11 +51,11 @@ git remote add origin git@github.com:Asano-Naoki/docker_laravel_vue_redis_echo.g
 git fetch
 git merge origin/main --allow-unrelated-histories
 ```
-4. Start docker-compose.
+4. docker-composeを開始します。
 ```
 docker-compose up -d
 ```
-5. Create users table.
+5. usersテーブルを作ります。
 ```
 docker-compose exec php sh
 ...
@@ -65,19 +63,19 @@ docker-compose exec php sh
 ...
 php artisan migrate
 ```
-NOTE:
-At the first setup, php artisan migrate command may fail because not all the mysql files are created. In this situation, you have just to wait for a few minutes.
+注: 
+最初のセットアップ時には、mysqlファイルがすべて作られていないために、php artisan migrateコマンドが失敗するかもしれません。その場合は数分待ってください。
 
 ### Vue.js
 
-1. Install laravel/ui.
+1. laravel/uiをインストールします。
 ```
 docker run --rm -v $PWD:/app composer require laravel/ui
 ```
-NOTE:
-It is not necessary to install laravel/ui, however, it is the easiest way to use vue.js.
+注:
+laravel/uiをインストールすることは必須ではありませんが、これがvue.jsを使うために一番簡単なやり方です。
 
-2. Publish the vue.js related files.
+2. vue.js関係のファイルを発行します。
 ```
 docker-compose exec php sh
 ...
@@ -86,7 +84,7 @@ docker-compose exec php sh
 php artisan ui vue
 ```
 
-3. Edit resources/views/welcome.blade.php file.
+3. resources/views/welcome.blade.phpを編集します。
 ```
 (before </head>)
 +<script src="/js/app.js" defer></script>
@@ -96,29 +94,26 @@ php artisan ui vue
 +<div id="app" class="mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg">
 +<example-component></example-component>
 ```
-NOTE:
-Withouse "defer", "Cannot find element: #app" occurs.
+注:
+"defer"がないと"Cannot find element: #app"が発生します。
 
-4. Compile the assets.
+4. assetsをコンパイルします。
 ```
 docker run --rm  -v $PWD:/usr/src/app -w /usr/src/app node npm install && npm run dev
 ```
-NOTE:
-If "npm ERR! code ELIFECYCLE" occurs, simply execute the same command again.
+注:
+"npm ERR! code ELIFECYCLE"が発生したら、もう一度同じコマンドを実行してください。
 
-
-5. Visit welcome page(http://localhost).
-
-The string  
+5. welcome page(http://localhost)に行きます。
 
 "Example Component  
 I'm an example component."  
 
-should appear. This is the proof which shows vue.js works properly.
+という文字列が見えたら、vue.jsは適切に動いています。
 
 ### Redis
 
-1. Check redis connection.
+1. redisの接続を確認します。
 ```
 docker-compose exec redis sh
 ...
@@ -130,18 +125,18 @@ redis-cli
 ...
 127.0.0.1:6379> keys *
 ```
-Session information like "laravel_database_laravel_cache:xxxxxxxxxxxxxxxxxxxx" should be displayed. This means you connect laravel to redis and session information is stored there.
+"laravel_database_laravel_cache:xxxxxxxxxxxxxxxxxxxx"といったセッション情報が表示されるはずです。これはlaravelがredisに接続できてセッション情報がredisに保存されているしるしです。
 
-NOTE:
-To store session information in redis, SESSION_DRIVER is need to be set "redis" instead of "file". [See Base](#base-set-up) set up section above.
+注:
+セッション情報を保存するためには、SESSION_DRIVERがfileではなくredisに設定される必要があります。[基本設定](#基本設定)を参照。
 
 ### laravel-echo-server
 
-1. Create laravel-echo-server.json file.
+1. laravel-echo-server.jsonファイルを作成します。
 ```
 docker-compose run --rm echo-server laravel-echo-server init
 ```
-You will be asked some question. Answer them like this:
+いくつか質問されるので、以下のように答えてください。
 ```
 ? Do you want to run this server in development mode? Yes
 ? Which port would you like to serve from? 6001
@@ -153,22 +148,22 @@ You will be asked some question. Answer them like this:
 ? What do you want this config to be saved as? laravel-echo-server.json
 ```
 
-2. Edit laravel-echo-server.json file.
+2. laravel-echo-server.jsonファイルを編集します。
 ```
 -"redis": {},
 +"redis": {"host": "redis", "port": 6379},
 ```
 
-3. Start docker-compose.
+3. docker-composeを開始します。
 ```
 docker-compose up -d
 ```
 
-4. Confirm laravel-echo-server is ready.
+4. laravel-echo-serverの準備ができていることを確認します。
 ```
 docker-compose logs echo-server
 ```
-If laravel-echo-server is ready, you can see the logs below:
+laravel-echo-serverの準備ができていれば、以下のようなログを見ることができます。
 ```
 echo-server_1  | 
 echo-server_1  | L A R A V E L  E C H O  S E R V E R
@@ -188,20 +183,20 @@ echo-server_1  |
 
 ### Laravel app
 
-1. Uncomment Broadcast Service Provider in config/app.php.
+1. config/app.phpのBroadcast Service Providerのコメントアウトを外します。
 ```
 -// App\Providers\BroadcastServiceProvider::class,
 +App\Providers\BroadcastServiceProvider::class,
 ```
 
-2. Install laravel-echo and socket.io-client.
+2. laravel-echoとsocket.io-clientをインストールします。
 ```
 docker run --rm  -v $PWD:/usr/src/app -w /usr/src/app node npm install laravel-echo socket.io-client@2.4.0
 ```
-NOTE:
-Latest socke.io-client fails to establish websocket connection. Version 2.4.0 is fine.
+注:
+最新のsocke.io-clientではwebsocketの確立に失敗します。バージョン2.4.0ならうまくいきます。
 
-3. Add Echo setting to resources/js/bootstrap.js.
+3. resources/js/bootstrap.jsにEchoの設定を書きます。
 ```
 +import Echo from 'laravel-echo';
 +window.io = require('socket.io-client');
@@ -210,15 +205,15 @@ Latest socke.io-client fails to establish websocket connection. Version 2.4.0 is
 +    host: window.location.hostname + ':6001'
 +});
 ```
-NOTE:
-Echo setting for pusher is prepared in the state of comment out, but there are some differences between them(for pusher and for redis).
+注:
+pusherを使う場合のEchoの設定はコメントアウトの形で用意されていますが、redisを使う場合の設定とは異なります。
 
-4. Add route for message data post to routes/web.php.
+4. routes/web.phpにメッセージデータをpostするためのルートを加えます。
 ```
 + Route::post('/chat', [App\Http\Controllers\ChatController::class, 'index']);
 ```
 
-5. Make the controller and event.
+5. controllerとeventを作成します。
 ```
 docker-compose exec php sh
 ...
@@ -228,7 +223,7 @@ php artisan make:controller ChatController
 php artisan make:event MessageCreated
 ```
 
-6. Edit app/Http/Controllers/ChatController.php.
+6. app/Http/Controllers/ChatController.phpを編集します。
 ```
 (at the top level)
 + use App\Events\MessageCreated;
@@ -241,7 +236,7 @@ php artisan make:event MessageCreated
 +    }
 ```
 
-7. Edit app/Events/MessageCreated.php.
+7. app/Events/MessageCreated.phpを編集します。
 ```
 (at the top level)
 - class MessageCreated
@@ -267,7 +262,7 @@ php artisan make:event MessageCreated
 +    }
 ```
 
-8. Edit resources/js/components/ExampleComponent.vue.
+8. resources/js/components/ExampleComponent.vueを編集します。
 ```
 -<div class="card-body">
 -    I'm an example component.
@@ -314,26 +309,26 @@ php artisan make:event MessageCreated
 +}
 ```
 
-9. Compile the assets.
+9. assetsをコンパイルします。
 ```
 docker run --rm  -v $PWD:/usr/src/app -w /usr/src/app node npm run dev
 ```
 
-10. Run two browsers and chat with each other.
+10. ブラウザを２つ起動し、それらの間でチャットをします。
 
-Visit welcome page(http://localhost) and you can chat with each other as shown in the [Demo](#demo)
-
-
-## Usage
-This repository is an infrastructure for real-time interactions. There is no special usage. Just use laravel broadcasting.
+welcome page(http://localhost)に行くと[デモ](#demo)のようにチャットできます。
 
 
-## Author
-[Asano Naoki](https://asanonaoki.com/blog/)
+## 使い方
+このリポジトリはリアルタイムインタラクションのためのインフラです。特別な使い方はありません。laravelのブロードキャストをお使いください。
 
 
-## License
-Under the MIT License. See [LICENSE](/LICENSE) for details.
+## 著者
+[浅野直樹](https://asanonaoki.com/blog/)
+
+
+## ライセンス
+MITライセンスの元にライセンスされています。詳細は[LICENSE](/LICENSE)をご覧ください。
 
 
 
